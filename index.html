@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RapidRaksha - Women's Safety App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <!-- Load face-api.js first in the head -->
+    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="app-title">RapidRaksha</div>
+        <div class="app-subtitle">Powered by GroqShield AI</div>
+        <button id="settings-toggle" class="settings-toggle">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c0-.001-.001-.003-.002-.005C12.993 10.428 10.76 8 8 8s-4.992 2.428-4.998 4.996c-.001.002-.001.004-.002.004h10z"/>
+            </svg>
+            <span>Add Contact</span>
+        </button>
+    </header>
+
+    <main>
+        <div class="info-section">
+            <h2>Emergency Alert System</h2>
+            <p>Click the emergency button to send an alert with your current location and a snapshot from your camera. The system will analyze the situation, detect objects, and provide safety recommendations.</p>
+            <p><strong>Note:</strong> This app requires access to your camera and location. All data is securely processed.</p>
+        </div>
+
+        <div class="error-message" id="error-message"></div>
+
+        <div class="settings-container" id="settings-container">
+            <div id="api-key-section" style="margin-bottom: 1.5rem; background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                <label for="groq-api-key" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Groq API Key: <span style="color: #2196F3; font-size: 0.8rem;">(Demo key preloaded)</span></label>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="password" id="groq-api-key" style="flex: 1; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px;" placeholder="Enter your Groq API key">
+                    <button id="save-api-key" style="background: var(--secondary-color); color: white; border: none; border-radius: 4px; padding: 0.5rem 1rem; cursor: pointer;">Save</button>
+                </div>
+                <p style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--gray-color);">For production use, replace the demo key with your own Groq API key.</p>
+            </div>
+
+            <div id="vision-api-key-section" style="margin-bottom: 1.5rem; background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                <label for="vision-api-key" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Google Vision API Key: <span style="color: #2196F3; font-size: 0.8rem;">(Demo key preloaded)</span></label>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="password" id="vision-api-key" style="flex: 1; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px;" placeholder="Enter your Google Vision API key">
+                    <button id="save-vision-key" style="background: var(--secondary-color); color: white; border: none; border-radius: 4px; padding: 0.5rem 1rem; cursor: pointer;">Save</button>
+                </div>
+                <p style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--gray-color);">For production use, replace the demo key with your own Google Vision API key.</p>
+            </div>
+
+            <div id="emergency-contact-section" style="margin-bottom: 1.5rem; background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                <label for="emergency-contact" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Emergency Contact Number:</label>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="tel" id="emergency-contact" style="flex: 1; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px;" placeholder="Enter phone number (optional)">
+                    <button id="save-contact" style="background: var(--secondary-color); color: white; border: none; border-radius: 4px; padding: 0.5rem 1rem; cursor: pointer;">Save</button>
+                </div>
+                <p style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--gray-color);">When you press the emergency button, an SMS with your location will be sent to this number (if provided).</p>
+            </div>
+        </div>
+
+        <div class="panic-section">
+            <button id="panic-button" class="panic-button pulse">
+                ACTIVATE EMERGENCY ALERT
+            </button>
+            <p class="emergency-text">Press in case of emergency</p>
+            <p class="sms-notice" style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--gray-color);">
+                <strong>Note:</strong> When pressed, an SMS with your location will be sent to your emergency contact (if saved)
+            </p>
+        </div>
+
+        <div class="camera-section" id="camera-section">
+            <video id="camera-stream" autoplay></video>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Processing your emergency alert...</p>
+        </div>
+
+        <div class="alert-analysis" id="alert-analysis">
+            <div class="alert-header">
+                <div class="alert-title">Threat Analysis</div>
+                <div class="alert-timestamp" id="alert-timestamp"></div>
+            </div>
+            <div class="alert-content">
+                <img src="" alt="Captured image" class="alert-image" id="alert-image">
+                <div class="alert-details">
+                    <div class="threat-level" id="threat-level"></div>
+                    <div class="recommendation" id="recommendation"></div>
+                    <div id="reasoning" style="margin-top: 0.5rem; font-style: italic; font-size: 0.9rem;"></div>
+                    
+                    <div class="object-detection" id="object-detection">
+                        <div class="detected-objects-title">Objects Detected:</div>
+                        <div class="objects-list" id="objects-list"></div>
+                        <div class="detection-warning" id="detection-warning"></div>
+                    </div>
+                    
+                    <div class="location-info" id="location-info">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                        </svg>
+                        <span id="location-text"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="previous-alerts" id="previous-alerts">
+            <h2>Previous Alerts</h2>
+            <div class="alerts-list" id="alerts-list">
+                <!-- Previous alerts will be added here dynamically -->
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        &copy; 2023 RapidRaksha - Women's Safety App
+    </footer>
+
+    <!-- Add the API Service scripts -->
+    <script src="image_detection.js"></script>
+    <script src="groq_api.js"></script>
+    <script src="script.js"></script>
+</body>
+</html> 
